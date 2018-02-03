@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, url_for, redirect, flash
-import OAuth
+import authorization
 
 
 app = Flask(__name__)
 
-# auth_url = authorization.authorization()
+auth_url = authorization.authorization()
 
 
 # Creating a route
@@ -12,11 +12,13 @@ app = Flask(__name__)
 def oauth():
 
     if request.method == "POST":
-        # auth_responses = request.form['auth_url']
-        # token = authorization.get_token(auth_responses)
+        auth_responses = request.form['auth_url']
+        token = authorization.get_token(auth_responses)
 
         if token:
             return redirect(url_for('index'))
+
+        
 
 
     return render_template('oauth.html', auth_url = auth_url)
