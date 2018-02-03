@@ -1,0 +1,12 @@
+.container{
+    margin-top: 30vh;
+}
+
+h1{
+    color: blue;
+}
+
+.container .jumbotron span{
+    background-color: turquoise;
+}
+
