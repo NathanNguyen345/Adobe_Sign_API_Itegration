@@ -1,0 +1,13 @@
+.container{
+    margin-top: 30vh;
+}
+
+.container .jumbotron span{
+    background-color: turquoise;
+}
+
+.form-inline .form-control {
+    display: inline-block;
+    width: 100vh;
+    vertical-align: middle;
+}

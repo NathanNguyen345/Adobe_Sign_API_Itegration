@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+	<div class="jumbotron">
+
+		<h2>Authorization Needed: <a href="{{ auth_url }}" target="_blank">Click Here</a></h2>
+
+		<form action="" class="form-inline" method="post">
+
+			<input type="text" class="form-control" aria-label="Small", name="auth_url" aria-describedby="inputGroup-sizing-sm"
+				value="{{ request.form.auth_url }}", placeholder="Callback URL">
+
+			<input type="submit", class="btn btn-danger" value="Get Token">
+
+		</form>
+
+	</div>
+
+
+{% endblock %}
