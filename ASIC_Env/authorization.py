@@ -1,5 +1,6 @@
 from requests_oauthlib import OAuth2Session
 
+
 # Application configutation
 client_id     = 'CBJCHBCAABAAgAfIaHGyanFH3GBNZMVk94AGRkagLoh-'
 client_secret = 'PbV0cUkRruvJqRi7-yFnCra12BXm7XjX'
@@ -31,3 +32,6 @@ def get_token(auth_responses):
                               client_secret=client_secret)
 
     return token
+
+def test():
+    pass

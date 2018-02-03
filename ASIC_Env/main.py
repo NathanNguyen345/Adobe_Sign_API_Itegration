@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from flask import Flask, render_template, request, url_for, redirect, flash
 import authorization
 
@@ -16,16 +18,15 @@ def oauth():
         token = authorization.get_token(auth_responses)
 
         if token:
-            return redirect(url_for('index'))
+            return redirect(url_for('send_doc'))
 
-        
 
 
     return render_template('oauth.html', auth_url = auth_url)
 
-@app.route('/index')
+@app.route('/send_doc')
 def index():
-    return render_template('index.html')
+    return render_template('send_doc.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
