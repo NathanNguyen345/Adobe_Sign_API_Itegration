@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect
 from werkzeug.utils import secure_filename
 import requests
 import authorization
@@ -7,7 +7,7 @@ import json
 
 # Set upload path and allowed extensions
 UPLOAD_FOLDER = '/pdf/'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'jpg', 'png', 'doc', 'docx', 'gif'])
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'jpg', 'png', 'doc', 'docx', 'gif', 'rtf'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -15,6 +15,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Global Decration
 auth_url = authorization.authorization()
 header = ''
+transcientID = ''
 
 # Route to the authorization page
 @app.route('/', methods=['GET', 'POST'])
@@ -36,20 +37,22 @@ def oauth():
 
         # Redirect to the user to the send document page if token is valid
         if token:
-            return redirect(url_for('send_doc'))
-
-
+            return redirect(url_for('upload_doc'))
 
     return render_template('oauth.html', auth_url = auth_url, header=header)
+
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Route to the send document page
-@app.route('/send_doc', methods=['GET', 'POST'])
-def send_doc():
 
+
+# Route to the upload document page
+@app.route('/upload_doc', methods=['GET', 'POST'])
+def upload_doc():
+
+    global transcientID
 
     if request.method == "POST":
 
@@ -67,7 +70,8 @@ def send_doc():
         }
 
         # File data for api call
-        pdf_file = {'File': open('Web_Development.pdf', 'rb')}
+        # pdf_file = {'File': open('test_doc.pdf', 'rb')}
+        pdf_file = {'File': open('test.rtf', 'rb')}
 
         # Post transientDocument and get document ID
         transcientID = requests.post('https://api.na2.echosign.com/api/rest/v5/transientDocuments',
@@ -75,6 +79,8 @@ def send_doc():
                                      data=data,
                                      files=pdf_file).json().get('transientDocumentId')
 
+        if transcientID:
+            return redirect((url_for('send_doc')))
 
         # # Check if the post request has a file path
         # if 'file' not in request.files:
@@ -92,6 +98,41 @@ def send_doc():
         #     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         #     return redirect((url_for('upload_file', filename=filename)))
 
+    return render_template('upload_doc.html')
+
+
+
+# Route to the send document page
+@app.route('/send_doc')
+def send_doc():
+
+    agreement = {
+        "documentCreationInfo": {
+            "fileInfos": [{
+                "transientDocumentId": transcientID
+            }],
+            "name": "MyTestAgreement",
+            "recipientSetInfos": [
+                {
+                    "recipientSetMemberInfos": [
+                        {
+                            "email": "nnguyenpi88@gmail.com",
+                            "fax": ""
+                        }
+                    ],
+                    "recipientSetRole": "SIGNER"
+                }
+            ],
+            "signatureType": "ESIGN",
+            "signatureFlow": "SENDER_SIGNATURE_NOT_REQUIRED"
+        }
+    }
+
+    agreementID = requests.post('https://api.na2.echosign.com:443/api/rest/v5/agreements',
+                                headers=header,
+                                json=agreement).json().get('agreementId')
+
+    print(agreementID)
 
 
     return render_template('send_doc.html')
