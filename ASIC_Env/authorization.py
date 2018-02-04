@@ -32,6 +32,3 @@ def get_token(auth_responses):
                               client_secret=client_secret)
 
     return token
-
-def test():
-    pass
