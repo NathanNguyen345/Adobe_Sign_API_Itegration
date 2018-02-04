@@ -1,10 +1,16 @@
 import os
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, flash
+from werkzeug.utils import secure_filename
 import requests
 import authorization
 import json
 
+# Set upload path and allowed extensions
+UPLOAD_FOLDER = '/pdf/'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'jpg', 'png', 'doc', 'docx', 'gif'])
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Global Decration
 auth_url = authorization.authorization()
@@ -36,28 +42,57 @@ def oauth():
 
     return render_template('oauth.html', auth_url = auth_url, header=header)
 
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # Route to the send document page
 @app.route('/send_doc', methods=['GET', 'POST'])
 def send_doc():
 
 
     if request.method == "POST":
+
+        # Extract recipients email address
         email = request.form['email']
-        pdf_file = request.form['pdf_file']
 
-        print(pdf_file)
+        # Extract the pdf file that the user and secure save it to the file system
+        f = request.files['file']
+        f.save(secure_filename(f.filename))
 
-
-        payload = {'File-Name' : 'test',
-                'File' : ''
+        # Form data for api call
+        data = {
+            'Mine-Type': 'application/pdf',
+            'File-Name' : 'PDF File'
         }
 
-        # Upload the document
-        r = requests.post('https://api.na2.echosign.com/api/rest/v5/transientDocuments',
-                          headers=header,
-                          data=json.dumps(payload))
-        r = r.text
-        print(r)
+        # File data for api call
+        pdf_file = {'File': open('Web_Development.pdf', 'rb')}
+
+        # Post transientDocument and get document ID
+        transcientID = requests.post('https://api.na2.echosign.com/api/rest/v5/transientDocuments',
+                                     headers=header,
+                                     data=data,
+                                     files=pdf_file).json().get('transientDocumentId')
+
+
+        # # Check if the post request has a file path
+        # if 'file' not in request.files:
+        #     flash('No file part')
+        #     return redirect(requests.url)
+        # file = request.files['file']
+        #
+        # # If no file is selected, browser will submit an empty part without a filename
+        # if file.filename == '':
+        #     flash('No file selected')
+        #     return redirect(requests.url)
+        #
+        # if file and allowed_file(file.filename):
+        #     filename = secure_filename(file.filename)
+        #     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        #     return redirect((url_for('upload_file', filename=filename)))
+
+
 
     return render_template('send_doc.html')
 

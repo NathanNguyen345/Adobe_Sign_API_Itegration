@@ -4,7 +4,7 @@
 
 	<div class="jumbotron">
 
-		<form action="", class="send_pdf", method="post">
+		<form action="", class="send_pdf", method="post", enctype="multipart/form-data">
 
 			<div class="input-group input-group-sm mb-3">
 				<div class="input-group-prepend">
@@ -15,11 +15,11 @@
 
 			<div class="form-group">
 				<label for="exampleInputFile">Document Upload</label>
-				<input type="file" name="pdf_file" accept='application/pdf' value="{{ request.form.pdf_file }}" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
+				<input type="file" name="file" value="{{ request.form.file }}" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
 			</div>
 
 			<div class="send_doc_button">
-				<input type="submit", class="btn btn-danger" value="Send Doc">
+				<input type="submit", class="btn btn-danger" value="Upload">
 			</div>
 
 		</form>
