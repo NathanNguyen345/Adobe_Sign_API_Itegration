@@ -5,7 +5,7 @@
     Date: 2/2/2018
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import os
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, flash
 from werkzeug.utils import secure_filename
 import requests
 import authorization
@@ -30,7 +30,7 @@ def oauth():
 
     global session
 
-    # If user clicks get token button
+    # If the user clicks the get token button
     if request.method == "POST":
 
         # Grab the authorization url from the input field
@@ -52,16 +52,14 @@ def oauth():
 @app.route('/upload_doc', methods=['GET', 'POST'])
 def upload_doc():
 
-    global app
-
-    # If the user clicks submit button
+    # If the user clicks the submit button
     if request.method == "POST":
 
         # Extract recipients email address
         email = request.form['email']
         session['email'] = email.split(' ')
 
-        # Extract the pdf file that the user and secure save it to the file system
+        # Extract the file that the user uploaded and secure saving it to the file system
         f = request.files['file']
         f.save(secure_filename(f.filename))
 
