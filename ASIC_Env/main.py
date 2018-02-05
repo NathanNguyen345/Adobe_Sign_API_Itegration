@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, url_for, redirect
 from werkzeug.utils import secure_filename
 import requests
 import authorization
-import json
+import agreements
 
 # Set upload path and allowed extensions
 UPLOAD_FOLDER = '/pdf/'
@@ -16,6 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 auth_url = authorization.authorization()
 header = ''
 transcientID = ''
+email = ''
 
 # Route to the authorization page
 @app.route('/', methods=['GET', 'POST'])
@@ -53,11 +54,13 @@ def allowed_file(filename):
 def upload_doc():
 
     global transcientID
+    global email
 
     if request.method == "POST":
 
         # Extract recipients email address
         email = request.form['email']
+        email = email.split(' ')
 
         # Extract the pdf file that the user and secure save it to the file system
         f = request.files['file']
@@ -82,21 +85,6 @@ def upload_doc():
         if transcientID:
             return redirect((url_for('send_doc')))
 
-        # # Check if the post request has a file path
-        # if 'file' not in request.files:
-        #     flash('No file part')
-        #     return redirect(requests.url)
-        # file = request.files['file']
-        #
-        # # If no file is selected, browser will submit an empty part without a filename
-        # if file.filename == '':
-        #     flash('No file selected')
-        #     return redirect(requests.url)
-        #
-        # if file and allowed_file(file.filename):
-        #     filename = secure_filename(file.filename)
-        #     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #     return redirect((url_for('upload_file', filename=filename)))
 
     return render_template('upload_doc.html')
 
@@ -106,34 +94,17 @@ def upload_doc():
 @app.route('/send_doc')
 def send_doc():
 
-    agreement = {
-        "documentCreationInfo": {
-            "fileInfos": [{
-                "transientDocumentId": transcientID
-            }],
-            "name": "MyTestAgreement",
-            "recipientSetInfos": [
-                {
-                    "recipientSetMemberInfos": [
-                        {
-                            "email": "nnguyenpi88@gmail.com",
-                            "fax": ""
-                        }
-                    ],
-                    "recipientSetRole": "SIGNER"
-                }
-            ],
-            "signatureType": "ESIGN",
-            "signatureFlow": "SENDER_SIGNATURE_NOT_REQUIRED"
-        }
-    }
+    agreementID_records = {}
 
-    agreementID = requests.post('https://api.na2.echosign.com:443/api/rest/v5/agreements',
-                                headers=header,
-                                json=agreement).json().get('agreementId')
+    # Iterate through email list and request a post call to send out documents
+    for recipient in email:
+        agreement = agreements.create_agreement(transcientID, recipient)
+        agreementID = requests.post('https://api.na2.echosign.com:443/api/rest/v5/agreements',
+                                    headers=header,
+                                    json=agreement).json().get('agreementId')
 
-    print(agreementID)
-
+        # Store all reciept's email address along with their agreement ID's
+        agreementID_records[recipient] = agreementID
 
     return render_template('send_doc.html')
 

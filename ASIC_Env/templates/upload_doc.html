@@ -10,12 +10,14 @@
 				<div class="input-group-prepend">
 					<span class="input-group-text" id="inputGroup-sizing-sm">Please Enter Email Address</span>
 				</div>
-				<input type="text" name="email" value="{{ request.form.email }}" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+				<input type="text" name="email" value="{{ request.form.email }}" class="form-control" aria-label="Small"
+					   aria-describedby="inputGroup-sizing-sm">
 			</div>
+			<h6 id="warning_sign">Please separate each email with a space </h6>
 
 			<div class="form-group">
-				<label for="exampleInputFile">Document Upload</label>
-				<input type="file" name="file" value="{{ request.form.file }}" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
+				<input type="file" name="file" value="{{ request.form.file }}" class="form-control-file"
+					   id="exampleInputFile" aria-describedby="fileHelp">
 			</div>
 
 			<div class="send_doc_button">
