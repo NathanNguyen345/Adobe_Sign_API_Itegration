@@ -84,7 +84,6 @@ def upload_doc():
     return render_template('upload_doc.html')
 
 
-
 # Route to the send document page
 @app.route('/send_doc')
 def send_doc():
