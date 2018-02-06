@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+{% set active_page='check_status' %}
+
+{% block body %}
+
+	<div class="jumbotron">
+
+		<div class="row">
+
+			<!-- Left Pane: Selection of user and submit button -->
+			<div class="col-lg-6">
+
+				<h1>Recipient</h1>
+
+				<form action="{{ url_for('check_status') }}" method="POST">
+					<!-- Selection box that iterate through email list to create
+                         selection entries -->
+					<select class="form-control" name="email_select">
+						{% for x in session['email'] %}
+							<option> {{ x }}</option>
+						{% endfor %}
+					</select>
+
+					<input type="submit" class="btn btn-danger" value="Check Status" id="check_btn">
+
+				</form>
+
+			</div>
+
+
+			<!-- Right Pane: View status of the email -->
+			<div class="col-lg-6">
+
+				<h1>Status</h1>
+
+			</div>
+
+		</div>
+	</div>
+
+
+{% endblock %}

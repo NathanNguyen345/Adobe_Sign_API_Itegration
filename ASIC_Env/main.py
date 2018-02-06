@@ -5,7 +5,7 @@
     Date: 2/2/2018
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import os
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect
 from werkzeug.utils import secure_filename
 import requests
 import authorization
@@ -23,6 +23,8 @@ auth_url = authorization.authorization()
 
 # Global variable that will store all of our cookies during the session
 session = {}
+session['selected'] = ''
+
 
 # Route to the authorization page
 @app.route('/', methods=['GET', 'POST'])
@@ -100,7 +102,42 @@ def send_doc():
         # Store all recipient's email address along with their agreement ID's
         agreementID_records[recipient] = agreementID
 
-    return render_template('send_doc.html')
+    session['agreementID_records'] = agreementID_records
+
+    return render_template('send_doc.html', session=session)
+
+@app.route('/check_status', methods=['GET', 'POST'])
+def check_status():
+
+    if session['selected'] == '':
+        not_selected = True
+    else:
+        not_selected = False
+
+
+    # If check status button is clicked
+    if request.method == "POST":
+
+        # If a recipient's name has been selected
+        if not_selected == False:
+
+            # Iterate through the email list to find the recipient's information
+            for name in session['email']:
+
+                # Displaying the recipient's status on the right pane of the screen
+                if(name == session['selected']):
+                    recipient_status = requests.post('https://api.na2.echosign.com:443/api/rest/v5/agreements' + session['agreementID_records'][name], headers=session['header'])
+                    print('\n')
+                    print(session['header'])
+                    print(session['agreementID_records'][name])
+                    print('\n')
+
+        else:
+            session['selected'] = request.form.get('email_select')
+
+        return redirect((url_for('check_status', session=session)))
+
+    return render_template('check_status.html', session=session)
 
 if __name__ == '__main__':
     app.run(debug=True)
