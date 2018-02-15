@@ -10,6 +10,8 @@ from werkzeug.utils import secure_filename
 import requests
 import authorization
 import agreements
+import json
+import pprint
 
 # Flask config set up
 app = Flask(__name__)
@@ -23,36 +25,39 @@ auth_url = authorization.authorization()
 
 # Global variable that will store all of our cookies during the session
 session = {}
-session['selected'] = ''
-
+session['selected'] = None
+session['status'] = ''
 
 # Route to the authorization page
 @app.route('/', methods=['GET', 'POST'])
-def oauth():
-
-    global session
-
-    # If the user clicks the get token button
-    if request.method == "POST":
-
-        # Grab the authorization url from the input field
-        auth_responses = request.form['auth_url']
-
-        # Fetch the access token information
-        token = authorization.get_token(auth_responses)
-
-        session['header'] = {'Access-Token': '{}'.format(token['access_token'])}
-
-        # Redirect to the user to the send document page if token is valid
-        if token:
-            return redirect(url_for('upload_doc', session=session))
-
-    return render_template('oauth.html', auth_url = auth_url, session=session)
+# def oauth():
+#
+#     global session
+#
+#     # If the user clicks the get token button
+#     if request.method == "POST":
+#
+#         # Grab the authorization url from the input field
+#         auth_responses = request.form['auth_url']
+#
+#         # Fetch the access token information
+#         token = authorization.get_token(auth_responses)
+#
+#         session['header'] = {'Access-Token': '{}'.format(token['access_token'])}
+#
+#         # Redirect to the user to the send document page if token is valid
+#         if token:
+#             return redirect(url_for('upload_doc', session=session))
+#
+#     return render_template('oauth.html', auth_url = auth_url, session=session)
 
 
 # Route to the upload document page
 @app.route('/upload_doc', methods=['GET', 'POST'])
 def upload_doc():
+
+    session['header'] = {'Access-Token': ''}
+
 
     # If the user clicks the submit button
     if request.method == "POST":
@@ -109,35 +114,38 @@ def send_doc():
 @app.route('/check_status', methods=['GET', 'POST'])
 def check_status():
 
-    if session['selected'] == '':
-        not_selected = True
-    else:
-        not_selected = False
-
-
     # If check status button is clicked
     if request.method == "POST":
 
         # If a recipient's name has been selected
-        if not_selected == False:
+        if session['selected'] != None:
 
             # Iterate through the email list to find the recipient's information
             for name in session['email']:
 
                 # Displaying the recipient's status on the right pane of the screen
                 if(name == session['selected']):
-                    recipient_status = requests.post('https://api.na2.echosign.com:443/api/rest/v5/agreements' + session['agreementID_records'][name], headers=session['header'])
-                    print('\n')
-                    print(session['header'])
-                    print(session['agreementID_records'][name])
-                    print('\n')
+                    recipient_status = requests.get('https://api.na2.echosign.com:443/api/rest/v5/agreements/' +
+                                                    session['agreementID_records'][name],
+                                                    headers=session['header']).json()
+
+                    # Get status of the recipient
+                    status = recipient_status['participantSetInfos'][1]['status']
+
+                    # Assign status to session cache
+                    session['status'] = status
 
         else:
             session['selected'] = request.form.get('email_select')
 
-        return redirect((url_for('check_status', session=session)))
-
     return render_template('check_status.html', session=session)
 
+
+@app.route('/reminders', methods=['GET', 'POST'])
+def reminders():
+
+
+
+    return render_template('reminders.html', session=session)
 if __name__ == '__main__':
     app.run(debug=True)

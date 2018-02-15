@@ -32,7 +32,10 @@
 			<div class="col-lg-6">
 
 				<h1>Status</h1>
-
+				{%  if session['status']  %}
+					<h2>{{ session['status'] }}</h2>
+					<a href="{{ url_for('reminders') }}">Send Reminders</a>
+				{% endif %}
 			</div>
 
 		</div>
